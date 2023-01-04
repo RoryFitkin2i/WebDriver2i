@@ -8,7 +8,6 @@ pipeline{
           
           steps{
             echo 'building the application...'
-            sh "npm install"
             sh "mvn install"
           }
      }
