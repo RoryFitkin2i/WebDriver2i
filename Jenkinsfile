@@ -2,28 +2,27 @@ pipeline{
   agent any
   tools {
     maven 'Maven'
-    jdk 'JDK'
   }
   stages{
     stage("build"){
           
           steps{
             echo 'building the application...'
-            sh "mvn install"
+            bat "mvn -B compile"
           }
      }
     stage("test"){
           
           steps{
-            echo 'testing the application...'
-          }
-     }
-    stage("deploy"){
-          
+              bat 'mvn -B clean install'
+              cucumber failedFeaturesNumber: -1, failedScenariosNumber: -1, failedStepsNumber: -1, fileIncludePattern: '**/*.json', pendingStepsNumber: -1, skippedStepsNumber: -1, sortingMethod: 'ALPHABETICAL', undefinedStepsNumber: -1
+              }
+      }
+      stage('Archive'){
           steps{
-            echo 'deploying the application...'
+              archiveArtifacts 'target/*.jar'
           }
-     }
+      }
    }
 }
           
