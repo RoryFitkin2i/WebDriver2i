@@ -2,11 +2,13 @@ pipeline{
   agent any
   tools {
     maven 'Maven'
+  }
   stages{
     stage("build"){
           
           steps{
             echo 'building the application...'
+            sh "npm install"
             sh "mvn install"
           }
      }
