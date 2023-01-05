@@ -1,27 +1,34 @@
-pipeline{
-  agent any
- 
-  stages{
-    stage("build"){
-          
-          steps{
-            echo 'building the application...'
-            bat "mvn -B compile"
-          }
-     }
-    stage("test"){
-          
-          steps{
-              bat 'mvn -B clean install'
-              cucumber failedFeaturesNumber: -1, failedScenariosNumber: -1, failedStepsNumber: -1, fileIncludePattern: '**/*.json', pendingStepsNumber: -1, skippedStepsNumber: -1, sortingMethod: 'ALPHABETICAL', undefinedStepsNumber: -1
-              }
-      }
-      stage('Archive'){
-          steps{
-              archiveArtifacts 'target/*.jar'
-          }
-      }
-   }
-}
-          
-          
+pipeline {
+
+    agent any
+    stages {
+
+        stage('Checkout Codebase'){
+            steps{
+                cleanWs()
+            }
+        }
+
+        stage('Build'){
+            steps{
+                sh 'mkdir lib'
+                sh 'cd lib/ ; wget https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.0/junit-platform-console-standalone-1.7.0-all.jar'
+                sh 'cd src ; javac -cp "../lib/junit-platform-console-standalone-1.7.0-all.jar" DropDownTest.java FirstJunit5Test.java '
+            }
+        }
+
+        stage('Test'){
+            steps{
+                sh 'cd src/ ; java -jar ../lib/junit-platform-console-standalone-1.7.0-all.jar -cp "." --select-class CarTest --reports-dir="reports"'
+                junit 'src/reports/*-jupiter.xml'
+            }
+        }
+
+        stage('Deploy'){
+            steps{
+                sh 'cd src/ ; java App' 
+            }
+        }
+    }
+
+}   
