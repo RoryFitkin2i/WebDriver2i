@@ -1,34 +1,9 @@
-pipeline {
-
-    agent any
-    stages {
-
-        stage('Checkout Codebase'){
-            steps{
-                cleanWs()
-            }
-        }
-
-        stage('Build'){
-            steps{
-                sh 'mkdir lib'
-                sh 'cd lib/ ; wget https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.0/junit-platform-console-standalone-1.7.0-all.jar'
-                sh 'cd src ; javac -cp "../lib/junit-platform-console-standalone-1.7.0-all.jar" DropDownTest.java FirstJunit5Test.java '
-            }
-        }
-
-        stage('Test'){
-            steps{
-                sh 'cd src/ ; java -jar ../lib/junit-platform-console-standalone-1.7.0-all.jar -cp "." --select-class CarTest --reports-dir="reports"'
-                junit 'src/reports/*-jupiter.xml'
-            }
-        }
-
-        stage('Deploy'){
-            steps{
-                sh 'cd src/ ; java App' 
-            }
-        }
+podTemplate(containers: [containerTemplate(name: 'maven', image: 'maven', command: 'sleep', args: 'infinity')]) {
+  node(POD_LABEL) {
+    checkout scm
+    container('maven') {
+      sh 'mvn -B -ntp -Dmaven.test.failure.ignore verify'
     }
-
-}   
+    junit '**/target/surefire-reports/TEST-*.xml'
+  }
+}  
